@@ -18,3 +18,5 @@ releases/**/*.tgz
 #*
 product/
 .downloads
+.bosh_compile
+.bosh_install
