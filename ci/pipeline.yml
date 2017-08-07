@@ -1,0 +1,168 @@
+resources:
+- name: repo
+  type: git
+  source:
+    uri: git@github.com:making/fluentd-forwarder-boshrelease.git
+    branch: master
+    private_key: {{github-private-key}}
+
+
+jobs:
+- name: bosh-deploy-candidate
+  plan:
+  - aggregate:
+    - get: repo
+  - task: create-offline-bundle
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: bosh/main-ubuntu-chroot
+          tag: latest
+      inputs:
+      - name: repo
+      outputs:
+      - name: compiled
+      caches:
+      - path: repo/blobs
+      - path: repo/.download
+      run:
+        path: bash
+        dir: repo
+        args:
+        - -c
+        - |
+          set -e
+          
+          if [ ! -f .download/bin/bosh ];then
+            wget https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-2.0.28-linux-amd64
+            mkdir -p .download/bin
+            install bosh-cli-2.0.28-linux-amd64 .download/bin/bosh
+          fi
+          export PATH=`pwd`/.download/bin:$PATH
+
+          ./add-blobs.sh
+          cp -ra blobs/* ../compiled/
+          find ../compiled
+  - task: bosh-create-release
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: starkandwayne/concourse
+          tag: latest
+      inputs:
+      - name: repo
+      - name: compiled
+      outputs:
+      - name: releases
+      caches:
+      - path: repo/blobs
+      - path: repo/.blobs
+      run:
+        path: bash
+        dir: repo
+        args:
+        - -c
+        - |
+          set -e
+
+          bosh2 add-blob ../compiled/ruby/bundler-1.10.6.gem ruby/bundler-1.10.6.gem
+          bosh2 add-blob ../compiled/ruby/ruby-2.3.0.tar.gz ruby/ruby-2.3.0.tar.gz
+          bosh2 add-blob ../compiled/ruby/rubygems-2.6.2.tgz ruby/rubygems-2.6.2.tgz
+          bosh2 add-blob ../compiled/ruby/yaml-0.1.6.tar.gz ruby/yaml-0.1.6.tar.gz
+          bosh2 add-blob ../compiled/fluentd-vendor/fluentd-vendor-v0.12.39.tgz fluentd-vendor/fluentd-vendor-v0.12.39.tgz
+
+          bosh2 create-release --name=fluentd-forwarder-dev --force --timestamp-version --tarball=../releases/fluentd-forwarder-boshrelease.tgz
+  - task: bosh-upload-release
+    params:
+      <<: *BOSH
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: starkandwayne/concourse
+          tag: latest
+      inputs:
+      - name: repo
+      - name: releases
+      run:
+        path: bash
+        args:
+        - -c
+        - |
+          set -e
+          bosh2 upload-release releases/*.tgz
+          bosh2 releases
+          bosh2 -n clean-up
+  - task: bosh-deploy
+    params:
+      <<: *BOSH
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: starkandwayne/concourse
+          tag: latest
+      inputs:
+      - name: repo
+      - name: releases
+      run:
+        path: bash
+        args:
+        - -c
+        - |
+          set -e
+
+          LATEST=`bosh2 releases | grep fluentd-forwarder-dev  | head -1 | awk '{print $2}'`
+          cat <<EOF > manifest.yml
+          name: fluentd
+
+          releases:
+          - name: fluentd-forwarder-dev
+            version: ${LATEST}
+
+          stemcells:
+          - alias: trusty
+            os: ubuntu-trusty
+            version: latest
+
+          instance_groups:
+          - name: fluentd
+            instances: 1
+            vm_type: default
+            persist_disk: default
+            stemcell: trusty
+            azs: [z1]
+            networks:
+            - name: default
+            jobs:
+            - name: fluentd
+              release: fluentd-forwarder-dev
+
+          update:
+            canaries: 1
+            max_in_flight: 1
+            serial: false
+            canary_watch_time: 1000-60000
+            update_watch_time: 1000-60000
+          EOF
+
+          bosh2 -n deploy -d fluentd manifest.yml
+          bosh2 vms -d fluentd
+          bosh2 instances --ps -d fluentd
+          bosh2 -n delete-deployment -d fluentd
+          bosh2 -n delete-release fluentd-forwarder-dev
+
+
+
+params:
+  bosh: &BOSH
+    BOSH_ENVIRONMENT: {{bosh-environment}}
+    BOSH_CLIENT: {{bosh-client}}
+    BOSH_CLIENT_SECRET: {{bosh-client-secret}}
+    BOSH_CA_CERT: {{bosh-ca-cert}}

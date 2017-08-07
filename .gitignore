@@ -20,3 +20,4 @@ product/
 .downloads
 .bosh_compile
 .bosh_install
+credentials.yml
