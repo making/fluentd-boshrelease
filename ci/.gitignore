@@ -1,5 +1,0 @@
-credentials.yml
-credentials-*.yml
-*.tfstate
-*.tfstate.backup
-

@@ -1,6 +1,0 @@
----
-name: stackdriver-nozzle
-dependencies:
-  - golang
-files:
-  - stackdriver-nozzle/**/*

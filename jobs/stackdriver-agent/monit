@@ -1,5 +1,0 @@
-check process stackdriver_collectd
-  with pidfile /var/vcap/sys/run/stackdriver-agent/stackdriver_collectd.pid
-  start program "/var/vcap/jobs/stackdriver-agent/bin/stackdriver_collectd_ctl start"
-  stop program "/var/vcap/jobs/stackdriver-agent/bin/stackdriver_collectd_ctl stop"
-  group vcap

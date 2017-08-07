@@ -1,0 +1,13 @@
+---
+name: fluentd
+
+templates:
+  fluentd-ctl.erb: bin/fluentd-ctl
+  fluentd.conf: config/fluentd.conf
+  syslog.conf: config/config.d/syslog.conf
+  vcap.conf: config/config.d/vcap.conf
+
+packages:
+- fluentd
+
+properties: {}
