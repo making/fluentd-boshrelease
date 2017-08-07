@@ -1,6 +1,6 @@
 fluentd-vendor/fluentd-vendor-v0.12.39.tgz:
-  size: 9704846
-  sha: 37908ac61517814ed4baa5880e980a41c8cd94d1
+  size: 9683474
+  sha: 7e79654dc6d6abc284ee790dd69dc473b58113d5
 ruby/bundler-1.10.6.gem:
   size: 251392
   sha: 55a37fccd1c0cb5542d468e35d3be46dd0667f73
