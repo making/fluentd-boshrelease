@@ -5,7 +5,20 @@ resources:
     uri: git@github.com:making/fluentd-boshrelease.git
     branch: master
     private_key: {{github-private-key}}
-
+- name: repo-version
+  type: semver
+  source:
+    uri: git@github.com:making/fluentd-boshrelease.git
+    branch: version
+    private_key: {{github-private-key}}
+    file: version
+    driver: git
+- name: gh-release
+  type: github-release
+  source:
+    user: making
+    repository: fluentd-boshrelease
+    access_token: {{github-access-token}}
 
 jobs:
 - name: bosh-deploy-candidate
@@ -13,7 +26,7 @@ jobs:
   - aggregate:
     - get: repo
   - task: create-offline-bundle
-    config:
+    config: &CREATE_BUNDLE 
       platform: linux
       image_resource:
         type: docker-image
@@ -157,6 +170,97 @@ jobs:
           bosh2 instances --ps -d fluentd
           bosh2 -n delete-deployment -d fluentd
 
+- name: ship-it
+  plan:
+  - aggregate:
+    - get: repo
+      passed:
+      - bosh-deploy-candidate
+    - get: repo-version
+  - task: create-offline-bundle
+    config:
+      <<: *CREATE_BUNDLE
+  - task: create-release
+    params:
+      <<: *BOSH
+      GIT_EMAIL: {{git-email}}
+      GIT_NAME: {{git-name}}
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: starkandwayne/concourse
+          tag: latest
+      inputs:
+      - name: repo
+      - name: repo-version
+      - name: compiled
+      outputs:
+      - name: releases
+      - name: updated-repo
+      caches:
+      - path: repo/blobs
+      - path: repo/.blobs
+      run:
+        path: bash
+        dir: repo
+        args:
+        - -c
+        - |
+          set -e
+
+          bosh2 add-blob ../compiled/ruby/bundler-1.10.6.gem ruby/bundler-1.10.6.gem
+          bosh2 add-blob ../compiled/ruby/ruby-2.3.0.tar.gz ruby/ruby-2.3.0.tar.gz
+          bosh2 add-blob ../compiled/ruby/rubygems-2.6.2.tgz ruby/rubygems-2.6.2.tgz
+          bosh2 add-blob ../compiled/ruby/yaml-0.1.6.tar.gz ruby/yaml-0.1.6.tar.gz
+          bosh2 add-blob ../compiled/fluentd-vendor/fluentd-vendor-v0.12.39.tgz fluentd-vendor/fluentd-vendor-v0.12.39.tgz
+
+
+          VERSION=`cat ../repo-version/number`
+          TARBALL=fluentd-boshrelease-${VERSION}.tgz
+
+          bosh2 create-release --force --version=${VERSION} --final --tarball=../releases/${TARBALL}
+
+          SHA1=`sha1sum ../releases/${TARBALL} | awk '{print $1}'`
+          mkdir -p .sha1
+          echo ${SHA1} > .sha1/${VERSION}
+
+          git config --global user.email "${GIT_EMAIL}"
+          git config --global user.name "${GIT_NAME}"
+          git add -A
+          git commit -m "Release ${VERSION}"
+
+          shopt -s dotglob
+          cp -r ./* ../updated-repo
+
+          cat <<EOF > ../releases/note.md
+          \`\`\` yaml
+          ---
+          releases:
+          - name: fluentd
+            version: ${VERSION}
+            url: https://github.com/making/fluentd-boshrelease/releases/download/${VERSION}/${TARBALL}
+            sha1: ${SHA1}
+
+          addons:
+          - name: fluentd
+            jobs:
+            - name: fluentd-forwarder
+              release: fluentd
+          \`\`\`
+          EOF
+  - put: repo
+    params:
+      repository: updated-repo
+      tag: repo-version/number
+  - put: gh-release
+    params:
+      name: repo-version/number
+      tag: repo-version/number
+      body: releases/note.md
+      globs:
+      - releases/*.tgz
 
 params:
   bosh: &BOSH
