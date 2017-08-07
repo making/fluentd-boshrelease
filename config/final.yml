@@ -1,1 +1,6 @@
-name: fluentd
+---
+blobstore:
+  provider: local
+  options:
+    blobstore_path: /tmp/fluentd
+final_name: fluentd
