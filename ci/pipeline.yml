@@ -141,7 +141,7 @@ jobs:
             networks:
             - name: default
             jobs:
-            - name: fluentd
+            - name: fluentd-forwarder
               release: fluentd-dev
 
           update:
@@ -156,8 +156,6 @@ jobs:
           bosh2 vms -d fluentd
           bosh2 instances --ps -d fluentd
           bosh2 -n delete-deployment -d fluentd
-          bosh2 -n delete-release fluentd-dev
-
 
 
 params:
