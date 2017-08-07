@@ -1,1 +1,1 @@
-# Fluentd Forwarder BOSH Release
+# Fluentd BOSH Release

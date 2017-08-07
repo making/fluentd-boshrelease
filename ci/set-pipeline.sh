@@ -1,3 +1,3 @@
 #!/bin/sh
 
-echo y | fly -t home set-pipeline -p fluentd-forwarder-boshrelease -c pipeline.yml -l credentials.yml
+echo y | fly -t home set-pipeline -p fluentd-boshrelease -c pipeline.yml -l credentials.yml

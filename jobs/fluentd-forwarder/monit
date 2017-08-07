@@ -1,0 +1,5 @@
+check process fluentd-forwarder
+  with pidfile /var/vcap/sys/run/fluentd-forwarder/fluentd-forwarder.pid
+  start program "/var/vcap/jobs/fluentd-forwarder/bin/fluentd-ctl start"
+  stop program "/var/vcap/jobs/fluentd-forwarder/bin/fluentd-ctl stop"
+  group vcap

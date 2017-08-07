@@ -2,7 +2,7 @@ resources:
 - name: repo
   type: git
   source:
-    uri: git@github.com:making/fluentd-forwarder-boshrelease.git
+    uri: git@github.com:making/fluentd-boshrelease.git
     branch: master
     private_key: {{github-private-key}}
 
@@ -75,7 +75,7 @@ jobs:
           bosh2 add-blob ../compiled/ruby/yaml-0.1.6.tar.gz ruby/yaml-0.1.6.tar.gz
           bosh2 add-blob ../compiled/fluentd-vendor/fluentd-vendor-v0.12.39.tgz fluentd-vendor/fluentd-vendor-v0.12.39.tgz
 
-          bosh2 create-release --name=fluentd-forwarder-dev --force --timestamp-version --tarball=../releases/fluentd-forwarder-boshrelease.tgz
+          bosh2 create-release --name=fluentd-dev --force --timestamp-version --tarball=../releases/fluentd-boshrelease.tgz
   - task: bosh-upload-release
     params:
       <<: *BOSH
@@ -118,12 +118,12 @@ jobs:
         - |
           set -e
 
-          LATEST=`bosh2 releases | grep fluentd-forwarder-dev  | head -1 | awk '{print $2}'`
+          LATEST=`bosh2 releases | grep fluentd-dev  | head -1 | awk '{print $2}'`
           cat <<EOF > manifest.yml
           name: fluentd
 
           releases:
-          - name: fluentd-forwarder-dev
+          - name: fluentd-dev
             version: ${LATEST}
 
           stemcells:
@@ -142,7 +142,7 @@ jobs:
             - name: default
             jobs:
             - name: fluentd
-              release: fluentd-forwarder-dev
+              release: fluentd-dev
 
           update:
             canaries: 1
@@ -156,7 +156,7 @@ jobs:
           bosh2 vms -d fluentd
           bosh2 instances --ps -d fluentd
           bosh2 -n delete-deployment -d fluentd
-          bosh2 -n delete-release fluentd-forwarder-dev
+          bosh2 -n delete-release fluentd-dev
 
 
 

@@ -3,13 +3,13 @@
 set -e # exit immediately if a simple command exits with a non-zero status
 set -u # report the usage of uninitialized variables
 
-RUN_DIR=/var/vcap/sys/run/fluentd
-JOB_DIR=/var/vcap/jobs/fluentd
+RUN_DIR=/var/vcap/sys/run/fluentd-forwarder
+JOB_DIR=/var/vcap/jobs/fluentd-forwarder
 PKG_DIR=/var/vcap/packages/fluentd
-LOG_DIR=/var/vcap/sys/log/fluentd
+LOG_DIR=/var/vcap/sys/log/fluentd-forwarder
 POS_DIR=${RUN_DIR}/pos
 
-PIDFILE=${RUN_DIR}/fluentd.pid
+PIDFILE=${RUN_DIR}/fluentd-forwarder.pid
 
 source ${PKG_DIR}/utils.sh
 
@@ -18,7 +18,7 @@ case $1 in
   start)
     mkdir -p ${RUN_DIR} ${LOG_DIR} ${POS_DIR}
 
-    pid_guard ${PIDFILE} "fluentd"
+    pid_guard ${PIDFILE} "fluentd-forwarder"
     echo $$ > "${PIDFILE}"
 
     export PATH=${PKG_DIR}/bin:${PATH}
@@ -26,8 +26,8 @@ case $1 in
     exec ${PKG_DIR}/bin/fluentd \
       --config ${JOB_DIR}/config/fluentd.conf \
       --no-supervisor \
-      >>  ${LOG_DIR}/fluentd.stdout.log \
-      2>> ${LOG_DIR}/fluentd.stderr.log
+      >>  ${LOG_DIR}/fluentd-forwarder.stdout.log \
+      2>> ${LOG_DIR}/fluentd-forwarder.stderr.log
     ;;
 
   stop)
