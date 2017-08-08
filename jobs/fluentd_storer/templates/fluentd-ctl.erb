@@ -1,0 +1,40 @@
+#!/bin/bash
+
+set -e # exit immediately if a simple command exits with a non-zero status
+set -u # report the usage of uninitialized variables
+
+RUN_DIR=/var/vcap/sys/run/fluentd_storer
+JOB_DIR=/var/vcap/jobs/fluentd_storer
+PKG_DIR=/var/vcap/packages/fluentd
+LOG_DIR=/var/vcap/sys/log/fluentd_storer
+POS_DIR=${RUN_DIR}/pos
+
+PIDFILE=${RUN_DIR}/fluentd_storer.pid
+
+source ${PKG_DIR}/utils.sh
+
+case $1 in
+
+  start)
+    mkdir -p ${RUN_DIR} ${LOG_DIR} ${POS_DIR}
+
+    pid_guard ${PIDFILE} "fluentd_storer"
+    echo $$ > "${PIDFILE}"
+
+    export PATH=${PKG_DIR}/bin:${PATH}
+
+    exec ${PKG_DIR}/bin/fluentd \
+      --config ${JOB_DIR}/config/fluentd.conf \
+      --no-supervisor \
+      >>  ${LOG_DIR}/fluentd_storer.stdout.log \
+      2>> ${LOG_DIR}/fluentd_storer.stderr.log
+    ;;
+
+  stop)
+    kill_and_wait ${PIDFILE}
+    ;;
+
+  *)
+    echo "Usage: fluentd-ctl {start|stop}" ;;
+
+esac

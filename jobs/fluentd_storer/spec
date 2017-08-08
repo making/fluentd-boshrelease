@@ -1,0 +1,12 @@
+---
+name: fluentd_storer
+
+templates:
+  fluentd-ctl.erb: bin/fluentd-ctl
+  fluentd.conf: config/fluentd.conf
+  syslog.conf: config/config.d/syslog.conf
+
+packages:
+- fluentd
+
+properties: {}
