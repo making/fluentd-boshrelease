@@ -230,12 +230,13 @@ jobs:
           mkdir -p .sha1
           echo ${SHA1} > .sha1/${VERSION}
 
+          cp -r ./* ../updated-repo
+          cd ../updated-repo
+
           git config --global user.email "${GIT_EMAIL}"
           git config --global user.name "${GIT_NAME}"
           git add -A
           git commit -m "Release ${VERSION}"
-
-          cp -r ./* ../updated-repo
 
           cat <<EOF > ../releases/note.md
           runtime.yml
