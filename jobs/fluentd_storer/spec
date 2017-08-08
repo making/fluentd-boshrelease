@@ -9,4 +9,13 @@ templates:
 packages:
 - fluentd
 
-properties: {}
+properties:
+  syslog.port:
+    description: "The port to listen to."
+    default: 5140
+  syslog.protocol_type:
+    description: "The transport protocol used to receive logs.  (udp, tcp)"
+    default: tcp
+  syslog.message_format:
+    description: "Specify protocol format. (rfc3164, rfc5424 and auto)"
+    default: rfc5424
