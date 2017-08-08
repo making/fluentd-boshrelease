@@ -1,5 +1,5 @@
 ---
-name: fluentd_forwarder
+name: fluentd
 
 templates:
   fluentd-ctl.erb: bin/fluentd-ctl

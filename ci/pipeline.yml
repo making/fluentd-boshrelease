@@ -156,7 +156,7 @@ jobs:
             networks:
             - name: default
             jobs:
-            - name: fluentd_forwarder
+            - name: fluentd
               release: fluentd-dev
 
           update:
@@ -252,7 +252,7 @@ jobs:
           addons:
           - name: fluentd
             jobs:
-            - name: fluentd_forwarder
+            - name: fluentd
               release: fluentd
           \`\`\`
           EOF
@@ -315,7 +315,7 @@ jobs:
             value:
               name: fluentd
               jobs:
-              - name: fluentd_forwarder
+              - name: fluentd
                 release: fluentd
               exclude:
                 deployments:
