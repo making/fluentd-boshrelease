@@ -25,6 +25,7 @@ jobs:
   plan:
   - aggregate:
     - get: repo
+      trigger: true
   - task: create-offline-bundle
     config: &CREATE_BUNDLE 
       platform: linux
@@ -88,6 +89,7 @@ jobs:
           bosh2 add-blob ../compiled/ruby/yaml-0.1.6.tar.gz ruby/yaml-0.1.6.tar.gz
           bosh2 add-blob ../compiled/fluentd-vendor/fluentd-vendor-v0.12.39.tgz fluentd-vendor/fluentd-vendor-v0.12.39.tgz
 
+          rm -rf .final_builds releases
           bosh2 create-release --name=fluentd-dev --force --timestamp-version --tarball=../releases/fluentd-boshrelease.tgz
   - task: bosh-upload-release
     params:
@@ -209,13 +211,15 @@ jobs:
         - -c
         - |
           set -e
+          shopt -s dotglob
+          cp -r ./* ../updated-repo
+          rm -rf .final_builds releases
 
           bosh2 add-blob ../compiled/ruby/bundler-1.10.6.gem ruby/bundler-1.10.6.gem
           bosh2 add-blob ../compiled/ruby/ruby-2.3.0.tar.gz ruby/ruby-2.3.0.tar.gz
           bosh2 add-blob ../compiled/ruby/rubygems-2.6.2.tgz ruby/rubygems-2.6.2.tgz
           bosh2 add-blob ../compiled/ruby/yaml-0.1.6.tar.gz ruby/yaml-0.1.6.tar.gz
           bosh2 add-blob ../compiled/fluentd-vendor/fluentd-vendor-v0.12.39.tgz fluentd-vendor/fluentd-vendor-v0.12.39.tgz
-
 
           VERSION=`cat ../repo-version/number`
           TARBALL=fluentd-boshrelease-${VERSION}.tgz
@@ -231,10 +235,11 @@ jobs:
           git add -A
           git commit -m "Release ${VERSION}"
 
-          shopt -s dotglob
           cp -r ./* ../updated-repo
 
           cat <<EOF > ../releases/note.md
+          runtime.yml
+
           \`\`\` yaml
           ---
           releases:
