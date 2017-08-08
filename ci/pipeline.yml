@@ -262,6 +262,113 @@ jobs:
       globs:
       - releases/*.tgz
 
+- name: bosh-deploy-prod
+  plan:
+  - aggregate:
+    - get: repo
+      trigger: true
+      passed:
+      - ship-it
+  - task: update-runtime-config
+    params:
+      <<: *BOSH
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: starkandwayne/concourse
+          tag: latest
+      inputs:
+      - name: repo
+      run:
+        path: bash
+        dir: repo
+        args:
+        - -c
+        - |
+          set -e
+          VERSION=`ls -t .sha1 | sort -r | head -1`
+          SHA1=`cat .sha1/${VERSION}`
+          TARBALL=fluentd-boshrelease-${VERSION}.tgz
+          cat <<EOF > ops.yml
+          - type: remove
+            path: /releases/name=fluentd?
+          - type: remove
+            path: /addons/name=fluentd?
+
+          - type: replace
+            path: /releases/-
+            value: 
+              name: fluentd
+              version: ${VERSION}
+              url: https://github.com/making/fluentd-boshrelease/releases/download/${VERSION}/${TARBALL}
+              sha1: ${SHA1}
+          - type: replace
+            path: /addons/-
+            value:
+              name: fluentd
+              jobs:
+              - name: fluentd-forwarder
+                release: fluentd
+              exclude:
+                deployments:
+                - fluentd
+          EOF
+
+          echo
+          echo "== Before Update =="
+          echo
+          bosh2 runtime-config > runtime.yml
+          cat runtime.yml
+          echo
+          echo "== Interpolated =="
+          echo
+          bosh2 int runtime.yml -o ops.yml
+          bosh2 int runtime.yml -o ops.yml | sed '/url: file:/d' > runtime-updated.yml
+          echo
+          echo "== Final =="
+          echo
+          cat runtime-updated.yml
+          bosh2 -n update-runtime-config runtime-updated.yml
+
+
+########################################
+
+- name: bump-to-next-patch-version
+  plan:
+  - aggregate:
+    - get: repo
+      trigger: true
+      passed:
+      - ship-it
+    - get: repo-version
+      params:
+        bump: patch
+  - put: repo-version
+    params:
+      file: repo-version/number
+
+- name: bump-to-next-minor-version
+  plan:
+  - aggregate:
+    - get: repo-version
+      params:
+        bump: minor
+  - put: repo-version
+    params:
+      file: repo-version/number
+
+- name: bump-to-next-majar-version
+  plan:
+  - aggregate:
+    - get: repo-version
+      params:
+        bump: majar
+  - put: repo-version
+    params:
+      file: repo-version/number
+
 params:
   bosh: &BOSH
     BOSH_ENVIRONMENT: {{bosh-environment}}
