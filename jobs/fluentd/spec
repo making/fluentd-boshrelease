@@ -11,11 +11,14 @@ packages:
 - fluentd
 
 properties:
-  out_file.enabled: "Enable file Output Plugin"
+  out_file.enabled:
+    description: "Enable file Output Plugin"
     default: true
-  out_file.path: "The Path of the file."
+  out_file.path:
+    description: "The Path of the file."
     default: /var/vcap/data/fluentd/fluentd
-  in_syslog.enabled: "Enable syslog Input Plugin?"
+  in_syslog.enabled:
+    description: "Enable syslog Input Plugin?"
     default: false
   in_syslog.tag:
     description: "The prefix of the tag."
