@@ -156,7 +156,7 @@ jobs:
             networks:
             - name: default
             jobs:
-            - name: fluentd-forwarder
+            - name: fluentd_forwarder
               release: fluentd-dev
 
           update:
@@ -252,7 +252,7 @@ jobs:
           addons:
           - name: fluentd
             jobs:
-            - name: fluentd-forwarder
+            - name: fluentd_forwarder
               release: fluentd
           \`\`\`
           EOF
@@ -315,7 +315,7 @@ jobs:
             value:
               name: fluentd
               jobs:
-              - name: fluentd-forwarder
+              - name: fluentd_forwarder
                 release: fluentd
               exclude:
                 deployments:
@@ -337,7 +337,30 @@ jobs:
           echo
           cat runtime-updated.yml
           bosh2 -n update-runtime-config runtime-updated.yml
+  - task: run-test
+    params:
+      <<: *BOSH
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: starkandwayne/concourse
+          tag: latest
+      inputs:
+      - name: repo
+      run:
+        path: bash
+        dir: repo
+        args:
+        - -c
+        - |
+          set -e
 
+          curl -L -O -J https://raw.githubusercontent.com/cppforlife/zookeeper-release/master/manifests/zookeeper.yml
+          bosh2 -n -d zookeeper deploy zookeeper.yml
+          bosh2 -n -d zookeeper run-errand smoke-tests
+          bosh2 -n -d zookeeper delete-deployment
 
 ########################################
 
