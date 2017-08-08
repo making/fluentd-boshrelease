@@ -11,8 +11,8 @@ packages:
 
 properties:
   syslog.tag:
-  	description: "The prefix of the tag."
-  	default: fluentd_storer
+    description: "The prefix of the tag."
+    default: fluentd_storer
   syslog.port:
     description: "The port to listen to."
     default: 5140
