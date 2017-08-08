@@ -1,5 +1,0 @@
-check process fluentd_storer
-  with pidfile /var/vcap/sys/run/fluentd_storer/fluentd_storer.pid
-  start program "/var/vcap/jobs/fluentd_storer/bin/fluentd-ctl start"
-  stop program "/var/vcap/jobs/fluentd_storer/bin/fluentd-ctl stop"
-  group vcap
