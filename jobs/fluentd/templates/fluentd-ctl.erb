@@ -11,6 +11,17 @@ POS_DIR=${RUN_DIR}/pos
 
 PIDFILE=${RUN_DIR}/fluentd.pid
 
+<% if_p('aws.region') do |aws_region| %>
+export AWS_REGION=<%= aws_region %>
+<% end %>
+<% if_p('aws.access_key') do |aws_access_key| %>
+export AWS_ACCESS_KEY_ID=<%= aws_access_key %>
+<% end %>
+<% if_p('aws.access_secret_key') do |aws_access_secret_key| %>
+export AWS_SECRET_ACCESS_KEY=<%= aws_access_secret_key %>
+<% end %>
+
+
 source ${PKG_DIR}/utils.sh
 
 case $1 in

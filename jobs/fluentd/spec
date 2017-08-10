@@ -11,9 +11,21 @@ packages:
 - fluentd
 
 properties:
+  aws.region:
+    description: "AWS Region"
+  aws.access_key:
+    description: "AWS Access Key"
+  aws.access_secret_key:
+    description: "AWS Access Secret Key"
   out_file.enabled:
     description: "Enable file Output Plugin"
     default: true
   out_file.path:
     description: "The Path of the file."
     default: /var/vcap/data/fluentd/fluentd
+  out_cloudwatch_logs.enabled:
+    description: "Enable Cloud Watch Logs Output Plugin"
+    default: false
+  out_cloudwatch_logs.log_group_name_prefix:
+    description: "The prefix of the log group name."
+    default: bosh/
