@@ -1,3 +1,6 @@
+fluentd-vendor/fluentd-vendor-v0.12.39-plugin-cloudwatch-logs.tgz:
+  size: 11916444
+  sha: 0f85536699dfb8b3a6f6ec2b5a1d0b402265ad74
 fluentd-vendor/fluentd-vendor-v0.12.39.tgz:
   size: 9683474
   sha: 7e79654dc6d6abc284ee790dd69dc473b58113d5

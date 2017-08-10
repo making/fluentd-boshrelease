@@ -1,0 +1,25 @@
+name: fluentd
+version: 0.0.8
+commit_hash: f49e9ac
+uncommitted_changes: true
+jobs:
+- name: fluentd
+  version: fb3ed99c714a7aeb69b36c5efd547f1711122e46
+  fingerprint: fb3ed99c714a7aeb69b36c5efd547f1711122e46
+  sha1: 529d89a234e4c9ce56184330354e7dfab92bad8c
+packages:
+- name: common
+  version: 5ba655974cdf2e9cf7995b04eaf905f2db60ab4b
+  fingerprint: 5ba655974cdf2e9cf7995b04eaf905f2db60ab4b
+  sha1: 750ebc23809a15b1a8b241f2917c30fb53112de4
+  dependencies: []
+- name: fluentd
+  version: 065fa32bc031af685be844da1d7b313ba4348ebb
+  fingerprint: 065fa32bc031af685be844da1d7b313ba4348ebb
+  sha1: 83b3467500c6d38f17a5cfb56691d9a4c23affea
+  dependencies:
+  - common
+license:
+  version: 04cf957d4bde9cb6ee83d62232678509d2ed7cb2
+  fingerprint: 04cf957d4bde9cb6ee83d62232678509d2ed7cb2
+  sha1: 41cf53cf359e84d4488bf1194a166edb972d55c2
