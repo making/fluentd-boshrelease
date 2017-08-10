@@ -17,18 +17,3 @@ properties:
   out_file.path:
     description: "The Path of the file."
     default: /var/vcap/data/fluentd/fluentd
-  in_syslog.enabled:
-    description: "Enable syslog Input Plugin?"
-    default: false
-  in_syslog.tag:
-    description: "The prefix of the tag."
-    default: syslog
-  in_syslog.port:
-    description: "The port to listen to."
-    default: 5140
-  in_syslog.protocol_type:
-    description: "The transport protocol used to receive logs.  (udp, tcp)"
-    default: tcp
-  in_syslog.message_format:
-    description: "Specify protocol format. (rfc3164, rfc5424 and auto)"
-    default: rfc5424
