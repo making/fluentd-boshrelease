@@ -34,7 +34,7 @@ ${BOSH_INSTALL_TARGET}/bin/gem install ${BOSH_COMPILE_TARGET}/ruby/bundler-1.10.
 
 # Install Bundler cache
 pushd ${BOSH_COMPILE_TARGET}/fluentd-vendor
-  tar xvzf fluentd-vendor-v0.12.39.tgz
+  tar xvzf fluentd-vendor-v0.12.39-plugin-cloudwatch-logs.tgz
   mv vendor ${BOSH_INSTALL_TARGET}
 popd
 

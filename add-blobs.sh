@@ -22,7 +22,7 @@ if [ ! -f ${DIR}/blobs/ruby/yaml-0.1.6.tar.gz ];then
     curl -L -O -J http://pyyaml.org/download/libyaml/yaml-0.1.6.tar.gz
     bosh add-blob --dir=${DIR} yaml-0.1.6.tar.gz ruby/yaml-0.1.6.tar.gz
 fi
-if [ ! -f ${DIR}/blobs/fluentd-vendor/fluentd-vendor-v0.12.39.tgz ];then
+if [ ! -f ${DIR}/blobs/fluentd-vendor/fluentd-vendor-v0.12.39-plugin-cloudwatch-logs.tgz ];then
     export BOSH_INSTALL_TARGET=${DIR}/.bosh_install
     export BOSH_COMPILE_TARGET=${DIR}/.bosh_compile
 
@@ -41,7 +41,7 @@ if [ ! -f ${DIR}/blobs/fluentd-vendor/fluentd-vendor-v0.12.39.tgz ];then
     pushd ${DIR}/src/fluentd
     ${BOSH_INSTALL_TARGET}/bin/bundle install --path vendor/bundle
     tar czf fluentd-vendor.tgz vendor
-    bosh add-blob --dir=${DIR} fluentd-vendor.tgz fluentd-vendor/fluentd-vendor-v0.12.39.tgz
+    bosh add-blob --dir=${DIR} fluentd-vendor.tgz fluentd-vendor/fluentd-vendor-v0.12.39-plugin-cloudwatch-logs.tgz
     rm -rf vendor .bundle fluentd-vendor.tgz
     popd
 fi

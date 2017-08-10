@@ -8,7 +8,7 @@ files:
 - common/utils.sh
 - fluentd/Gemfile
 - fluentd/Gemfile.lock
-- fluentd-vendor/fluentd-vendor-v0.12.39.tgz
+- fluentd-vendor/fluentd-vendor-v0.12.39-plugin-cloudwatch-logs.tgz
 - ruby/bundler-1.10.6.gem
 - ruby/ruby-2.3.0.tar.gz
 - ruby/rubygems-2.6.2.tgz

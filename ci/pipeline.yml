@@ -87,7 +87,7 @@ jobs:
           bosh2 add-blob ../compiled/ruby/ruby-2.3.0.tar.gz ruby/ruby-2.3.0.tar.gz
           bosh2 add-blob ../compiled/ruby/rubygems-2.6.2.tgz ruby/rubygems-2.6.2.tgz
           bosh2 add-blob ../compiled/ruby/yaml-0.1.6.tar.gz ruby/yaml-0.1.6.tar.gz
-          bosh2 add-blob ../compiled/fluentd-vendor/fluentd-vendor-v0.12.39.tgz fluentd-vendor/fluentd-vendor-v0.12.39.tgz
+          bosh2 add-blob ../compiled/fluentd-vendor/fluentd-vendor-v0.12.39-plugin-cloudwatch-logs.tgz fluentd-vendor/fluentd-vendor-v0.12.39-plugin-cloudwatch-logs.tgz
 
           rm -rf .final_builds releases
           bosh2 create-release --name=fluentd-dev --force --timestamp-version --tarball=../releases/fluentd-boshrelease.tgz
@@ -171,7 +171,6 @@ jobs:
           bosh2 vms -d fluentd
           bosh2 instances --ps -d fluentd
           bosh2 -n delete-deployment -d fluentd
-
 - name: ship-it
   plan:
   - aggregate:
@@ -219,7 +218,7 @@ jobs:
           bosh2 add-blob ../compiled/ruby/ruby-2.3.0.tar.gz ruby/ruby-2.3.0.tar.gz
           bosh2 add-blob ../compiled/ruby/rubygems-2.6.2.tgz ruby/rubygems-2.6.2.tgz
           bosh2 add-blob ../compiled/ruby/yaml-0.1.6.tar.gz ruby/yaml-0.1.6.tar.gz
-          bosh2 add-blob ../compiled/fluentd-vendor/fluentd-vendor-v0.12.39.tgz fluentd-vendor/fluentd-vendor-v0.12.39.tgz
+          bosh2 add-blob ../compiled/fluentd-vendor/fluentd-vendor-v0.12.39-plugin-cloudwatch-logs.tgz fluentd-vendor/fluentd-vendor-v0.12.39-plugin-cloudwatch-logs.tgz
 
           VERSION=`cat ../repo-version/number`
           TARBALL=fluentd-boshrelease-${VERSION}.tgz
@@ -239,9 +238,13 @@ jobs:
           git commit -m "Release ${VERSION}"
 
           cat <<EOF > ../releases/note.md
-          runtime.yml
+
+          ## Deploying as a BOSH addon
+
+          Specify the jobs as addons in your runtime config to deploy fluentd on all instances in your deployment. 
 
           \`\`\` yaml
+          # runtime.yml
           ---
           releases:
           - name: fluentd
@@ -254,7 +257,73 @@ jobs:
             jobs:
             - name: fluentd
               release: fluentd
+            exclude:
+              deployments:
+              - fluentd
           \`\`\`
+
+          To deploy the runtime config:
+
+          \`\`\`
+          bosh update-runtime-config runtime.yml
+          bosh deploy -d <your-deployment>
+          \`\`\`
+
+          ## Deploying as a syslog server
+
+          Make sure this deployment is excluded by the runtime config.
+
+          \`\`\` yaml
+          # fluentd.yml
+          ---
+          name: fluentd
+          releases:
+          - name: fluentd
+            version: ${VERSION}
+            url: https://github.com/making/fluentd-boshrelease/releases/download/${VERSION}/${TARBALL}
+            sha1: ${SHA1}
+          - name: syslog
+            version: 11
+            url: https://bosh.io/d/github.com/cloudfoundry/syslog-release?v=11
+            sha1: 332ac15609b220a3fdf5efad0e0aa069d8235788
+
+          stemcells:
+          - alias: trusty
+            os: ubuntu-trusty
+            version: latest
+
+          instance_groups:
+          - name: fluentd
+            instances: 1
+            vm_type: default
+            persist_disk: default
+            stemcell: trusty
+            azs: [z1]
+            networks:
+            - name: default
+            jobs:
+            - name: syslog_storer
+              release: syslog
+              properties:
+                syslog:
+                  port: 514 
+            - name: fluentd
+              release: fluentd
+
+          update:
+            canaries: 1
+            max_in_flight: 1
+            serial: false
+            canary_watch_time: 1000-60000
+            update_watch_time: 1000-60000
+          \`\`\`
+
+          To deploy:
+
+          \`\`\`
+          bosh deploy -d fluentd fluentd.yml -v internal_ip=10.244.0.235
+          \`\`\`
+
           EOF
   - put: repo
     params:
